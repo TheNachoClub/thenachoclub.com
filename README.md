@@ -32,11 +32,11 @@ It should automatically open a tab with a running local webserver using
 ## Deployment
 
 This site will be hosted with [GitHub Pages][github-pages]. Anything in the
-`master` branch will automatically be synced to the live site, while `develop`
+`gh-pages` branch will automatically be synced to the live site, while `master`
 will be the merging branch for our source files. To deploy, we push the `build`
-directory from `develop` over as the root of `master`. There's a script for it.
+directory from `master` over as the root of `gh-pages`. There's a script for it.
 
-While in the `develop` branch, run: `./bin/deploy.sh`.
+While in the `master` branch, run: `./bin/deploy.sh`.
 
 Then go check out [thenachoclub.com][the-nacho-club] to see your changes.
 
