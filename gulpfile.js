@@ -31,6 +31,10 @@ var markdown     = require('metalsmith-markdown');
 var permalinks   = require('metalsmith-permalinks');
 
 var paths = {
+  base: {
+    src: './src/',
+    dest: './build/',
+  },
   html: {
     src: './src/content/**/*.+(html|md)',
     partials: './src/partials/',
@@ -182,6 +186,12 @@ gulp.task('browser-sync', function() {
       baseDir: paths.html.dest
     }
   });
+});
+
+// Move CNAME file over
+gulp.task('cname', function() {
+  return gulp.src(paths.base.src + 'CNAME')
+    .pipe(gulp.dest(paths.base.dest));
 });
 
 // Run build chain of tasks
