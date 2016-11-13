@@ -4,8 +4,9 @@ import chalk from 'chalk'
 import del from 'del'
 import browserSync from 'browser-sync'
 import browserify from 'browserify'
-import handlebars from 'handlebars'
 import watchify from 'watchify'
+import babelify from 'babelify'
+import handlebars from 'handlebars'
 
 // Gulp modules
 import gulp from 'gulp'
@@ -85,6 +86,7 @@ function bundle(watch) {
     packageCache: {},
   }
   let bundler = browserify(props)
+    .transform(babelify, { presets: [ 'es2015' ] })
   bundler = watch ? watchify(bundler) : bundler
   function rebundle() {
     gutil.log('Bundling javascript...')
