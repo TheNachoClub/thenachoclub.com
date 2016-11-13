@@ -31,14 +31,20 @@ It should automatically open a tab with a running local webserver using
 
 ## Deployment
 
-This site will be hosted with [GitHub Pages][github-pages]. Anything in the
-`gh-pages` branch will automatically be synced to the live site, while `master`
-will be the merging branch for our source files. To deploy, we push the `build`
-directory from `master` over as the root of `gh-pages`. There's a script for it.
+This site will be hosted with [GitHub Pages][github-pages]. To deploy to the
+`gh-pages` branch, build a production version of the site using:
 
-While in the `master` branch, run: `./bin/deploy.sh`.
+```bash
+$ gulp build --prod
+```
 
-Then go check out [thenachoclub.com][the-nacho-club] to see your changes.
+Then to push it over, use:
+
+```bash
+$ ./bin/deploy.sh
+```
+
+Your changes should then be up on [thenachoclub.com][the-nacho-club]!
 
 [metalsmith]: (http://www.metalsmith.io/)
 [handlebars]: (http://handlebarsjs.com/)
@@ -47,4 +53,4 @@ Then go check out [thenachoclub.com][the-nacho-club] to see your changes.
 [browser-sync]: (https://www.browsersync.io/)
 [trello-board]: (https://trello.com/b/IfaflIpq/the-nacho-club)
 [github-pages]: (https://pages.github.com/)
-[the-nacho-club]: (http://thenachoclub.com)
+[the-nacho-club]: (https://thenachoclub.github.io/thenachoclub.com/)

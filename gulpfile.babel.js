@@ -1,36 +1,35 @@
-// General modules
-var argv         = require('yargs').argv
-var assign       = require('lodash.assign');
-var chalk        = require('chalk');
-var del          = require('del');
-var browserSync  = require('browser-sync');
-var browserify   = require('browserify');
-var handlebars   = require('handlebars');
-var watchify     = require('watchify');
+import { argv } from 'yargs'
+import assign from 'lodash.assign'
+import chalk from 'chalk'
+import del from 'del'
+import browserSync from 'browser-sync'
+import browserify from 'browserify'
+import handlebars from 'handlebars'
+import watchify from 'watchify'
 
 // Gulp modules
-var gulp         = require('gulp');
-var gulpFM       = require('gulp-front-matter');
-var autoprefixer = require('gulp-autoprefixer');
-var buffer       = require('gulp-buffer');
-var notify       = require('gulp-notify');
-var rename       = require('gulp-rename');
-var replace      = require('gulp-replace');
-var runSequence  = require('run-sequence');
-var sass         = require('gulp-sass');
-var uglify       = require('gulp-uglify');
-var gutil        = require('gulp-util');
-var source       = require('vinyl-source-stream');
+import gulp from 'gulp'
+import gulpFM from 'gulp-front-matter'
+import autoprefixer from 'gulp-autoprefixer'
+import buffer from 'gulp-buffer'
+import imagemin from 'gulp-imagemin'
+import rename from 'gulp-rename'
+import replace from 'gulp-replace'
+import runSequence from 'run-sequence'
+import sass from 'gulp-sass'
+import uglify from 'gulp-uglify'
+import gutil from 'gulp-util'
+import source from 'vinyl-source-stream'
 
 // Metalsmith modules
-var gulpsmith    = require('gulpsmith');
-var define       = require('metalsmith-define');
-var inPlace      = require('metalsmith-in-place');
-var layouts      = require('metalsmith-layouts');
-var markdown     = require('metalsmith-markdown');
-var permalinks   = require('metalsmith-permalinks');
+import gulpsmith from 'gulpsmith'
+import define from 'metalsmith-define'
+import inPlace from 'metalsmith-in-place'
+import layouts from 'metalsmith-layouts'
+import markdown from 'metalsmith-markdown'
+import permalinks from 'metalsmith-permalinks'
 
-var paths = {
+const paths = {
   base: {
     src: './src/',
     dest: './build/',
@@ -55,10 +54,6 @@ var paths = {
     src: './src/assets/images/**/*',
     dest: './build/assets/images/',
   },
-  docs: {
-    src: './src/assets/docs/**/*',
-    dest: './build/assets/docs/',
-  },
 }
 
 // Make errors more readable
@@ -71,64 +66,59 @@ function mapError(err) {
       'Line ' + chalk.magenta(err.lineNumber) + ' & ' +
       'Column ' + chalk.magenta(err.columnNumber || err.column) + ': ' +
       chalk.blue(err.description)
-    );
+    )
   } else {
     // Browserify error
     gutil.log(
       chalk.red(err.name) + ': ' +
       chalk.yellow(err.message)
-    );
+    )
   }
 }
 
 // Bundle Javascript using Browserify
 function bundle(watch) {
-  var props = {
+  const props = {
     entries: [paths.js.src],
     debug: !argv.production,
     cache: {},
     packageCache: {},
-  };
-  var bundler = browserify(props);
-  bundler = watch ? watchify(bundler) : bundler;
+  }
+  let bundler = browserify(props)
+  bundler = watch ? watchify(bundler) : bundler
   function rebundle() {
-    var stream;
-    gutil.log('Rebundling javascript...');
-    stream = bundler.bundle();
+    gutil.log('Bundling javascript...')
+    const stream = bundler.bundle()
     return stream.on('error', mapError)
       .pipe(source(paths.js.src))
       .pipe(buffer())
-      .pipe(argv.production ? uglify({ mangle: false }) : gutil.noop())
+      .pipe(argv.production ? uglify({ mangle: true }) : gutil.noop())
       .pipe(rename(paths.js.filename))
       .pipe(gulp.dest(paths.js.dest))
-      .pipe(browserSync.reload({
-        stream: true,
-      })
-    );
-  };
-  bundler.on('update', rebundle);
-  return rebundle();
-};
+      .pipe(browserSync.reload({ stream: true })
+    )
+  }
+  bundler.on('update', rebundle)
+  return rebundle()
+}
 
 // Clean the build folder
-gulp.task('clean', function() {
-  return del.sync(paths.html.dest);
-});
+gulp.task('clean', () => {
+  return del.sync(paths.html.dest)
+})
 
 // Compile HTML
-gulp.task('metalsmith', function() {
+gulp.task('metalsmith', () => {
   return gulp.src(paths.html.src)
     .pipe(gulpFM({ remove: true })
-      .on('data', function(file) {
-        assign(file, file.frontMatter);
-        delete(file.frontMatter);
+      .on('data', (file) => {
+        assign(file, file.frontMatter)
+        delete(file.frontMatter)
       })
     )
     .pipe(gulpsmith()
       .use(define({
-        config: {
-          environment: argv.production ? 'production' : 'testing'
-        }
+        config: { environment: argv.production ? 'production' : 'dev' }
       }))
       .use(markdown({
         smartypants: true,
@@ -148,11 +138,11 @@ gulp.task('metalsmith', function() {
       }))
     )
     .pipe(gulp.dest(paths.html.dest))
-    .pipe(browserSync.reload({ stream: true }));
-});
+    .pipe(browserSync.reload({ stream: true }))
+})
 
 // Compile SASS
-gulp.task('styles', function() {
+gulp.task('styles', () => {
   return gulp.src(paths.css.src)
     .pipe(sass({
       outputStyle: 'compressed',
@@ -163,50 +153,58 @@ gulp.task('styles', function() {
       cascade: false,
     }))
     .pipe(gulp.dest(paths.css.dest))
-    .pipe(browserSync.reload({ stream: true }));
-});
+    .pipe(browserSync.reload({ stream: true }))
+})
 
 // Run JavaScript bundler
-gulp.task('scripts', function() {
-  return bundle(false);
-});
+gulp.task('scripts', () => {
+  return bundle(false)
+})
+
+gulp.task('images', () => {
+  return gulp.src(paths.images.src)
+    .pipe(imagemin())
+    .pipe(gulp.dest(paths.images.dest))
+})
 
 // Cache bust assets
-gulp.task('cachebust', function() {
+gulp.task('cachebust', () => {
   return gulp.src(paths.html.dest + '**/*.html')
   .pipe(replace(/styles.css\?v=([0-9]*)/g, 'styles.css?v=' + Date.now()))
   .pipe(replace(/scripts.js\?v=([0-9]*)/g, 'scripts.js?v=' + Date.now()))
-  .pipe(gulp.dest(paths.html.dest));
-});
+  .pipe(gulp.dest(paths.html.dest))
+})
 
 // Start server w/ cross-device syncing & style injection
-gulp.task('browser-sync', function() {
+gulp.task('browser-sync', () => {
   return browserSync.init({
     server: {
       baseDir: paths.html.dest
     }
-  });
-});
+  })
+})
 
 // Move CNAME file over
-gulp.task('cname', function() {
+gulp.task('cname', () => {
   return gulp.src(paths.base.src + 'CNAME')
-    .pipe(gulp.dest(paths.base.dest));
-});
+    .pipe(gulp.dest(paths.base.dest))
+})
 
 // Run build chain of tasks
-gulp.task('build', function() {
-  return runSequence('clean', 'metalsmith', 'styles', 'scripts', 'cachebust');
-});
+gulp.task('build', () => {
+  return runSequence('clean', 'styles', 'scripts', 'metalsmith', 'images', 'cachebust')
+})
 
 // Everything required to get started developing
-gulp.task('serve', function() {
+gulp.task('serve', () => {
   gulp.watch([
     paths.html.src,
     paths.html.layouts + '**/*',
     paths.html.partials + '**/*',
-  ], ['metalsmith']);
-  gulp.watch(paths.css.src, ['styles']);
-  bundle(true);
-  runSequence('build', 'browser-sync');
-});
+  ], ['metalsmith'])
+  gulp.watch(paths.css.src, ['styles'])
+  bundle(true)
+  runSequence('build', 'browser-sync')
+})
+
+gulp.task('default', ['build'])
